@@ -29,6 +29,17 @@
      ,@body
      (gl:delete-shader ,name)))
 
+(defun transfer-data-to-gpu (data &optional (buffer-type :array-buffer) (buffer-usage :static-draw))
+  (check-type data array)
+  ;; buffer doesn't actually have memory allocated to it until it's bound
+  (let ((buffer-object (gl:gen-buffer))
+        (gl-array (make-gl-array data :foo)))
+    (gl:bind-buffer buffer-type buffer-object)
+    ;; actually allocate memory for the given buffer object and then load vertex data into it
+    (gl:buffer-data :array-buffer buffer-usage gl-array)
+    (gl:bind-buffer buffer-type 0)
+    (gl:free-gl-array gl-array)))
+
 (defun make-shader (type filename)
   (assert (or (eq type :vertex-shader) (eq type :fragment-shader))
           (type) "~S is not a valid shader type" type)
@@ -55,25 +66,22 @@
       (gl:delete-shader fragment-shader))
     program))
 
-(defparameter *vertex-data* #(-0.5 -0.5 0.0
-                              0.5 -0.5 0.0
-                              0.0 0.5 0.0))
+(defparameter *vertices* #(0.5 0.5 0.0
+                           0.5 -0.5 0.0
+                           -0.5 -0.5 0.0
+                           -0.5 0.5 0.0))
+(defparameter *indices* #(0 1 3
+                          1 2 3))
 
-(defun make-gl-array (lisp-array)
-  (let ((gl-array (gl:alloc-gl-array :float (length lisp-array))))
+(defun make-gl-array (lisp-array type)
+  (let ((gl-array (gl:alloc-gl-array type (length lisp-array))))
     (dotimes (i (length lisp-array))
       (setf (gl:glaref gl-array i) (aref lisp-array i)))
     gl-array))
 
-(defun transfer-data-to-gpu (data &optional (buffer-type :array-buffer) (buffer-usage :static-draw))
-  (check-type data array)
-  ;; buffer doesn't actually have memory allocated to it until it's bound
-  (let ((buffer-object (gl:gen-buffer))
-        (gl-array (make-gl-array data)))
-    (gl:bind-buffer buffer-type buffer-object)
-    ;; actually allocate memory for the given buffer object and then load vertex data into it
-    (gl:buffer-data :array-buffer buffer-usage gl-array)
-    (gl:bind-buffer buffer-type 0)
+(defun buffer-data-from-lisp-array (target usage array array-element-type)
+  (let ((gl-array (make-gl-array array array-element-type)))
+    (gl:buffer-data target usage gl-array)
     (gl:free-gl-array gl-array)))
 
 (defun run ()
@@ -89,15 +97,18 @@
         (let ((program (make-program (resource "src/vertex-shader" 'logl)
                                      (resource "src/fragment-shader" 'logl)))
               (triangle-vbo (gl:gen-buffer))
-              (vao (gl:gen-vertex-array)))
+              (vao (gl:gen-vertex-array))
+              (ebo (gl:gen-buffer)))
+
+          (gl:use-program program)
 
           (with-vao (vao)
             (gl:bind-buffer :array-buffer triangle-vbo)
-            (let ((gl-array (make-gl-array *vertex-data*)))
-              (gl:buffer-data :array-buffer :static-draw gl-array)
-              (gl:free-gl-array gl-array))
-            (gl:vertex-attrib-pointer 0 3 :float nil 0 0)
-            (gl:enable-vertex-attrib-array 0))
+            (buffer-data-from-lisp-array :array-buffer :static-draw *vertices* :float)
+            (gl:enable-vertex-attrib-array 0)
+            (gl:bind-buffer :element-array-buffer ebo)
+            (buffer-data-from-lisp-array :element-array-buffer :static-draw *indices* :unsigned-int)
+            (gl:vertex-attrib-pointer 0 3 :float nil (* 4 3) 0))
 
           (sdl2:with-event-loop (:method :poll)
             (:keyup (:keysym keysym)
@@ -111,7 +122,7 @@
 
                    (with-program (program)
                      (with-vao (vao)
-                       (gl:draw-arrays :triangles 0 3)))
+                       (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-short) :count 6)))
 
                    (sdl2:gl-swap-window window))
             (:quit ()
