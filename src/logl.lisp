@@ -86,19 +86,21 @@
 
 (defun run ()
   (sdl2:with-init (:everything)
+    ;; make sure that we get 3.3 core profile
     (sdl2:gl-set-attrs :context-major-version 3
                        :context-minor-version 3
-                       :context-core-profile sdl2-ffi:+sdl-gl-context-profile-core+)
+                       :context-profile-mask sdl2-ffi:+sdl-gl-context-profile-core+)
     (sdl2:with-window (window :w 800 :h 600 :flags '(:opengl :resizable))
       (sdl2:with-gl-context (context window)
         (format t "opengl version: ~s~%" (gl:get-string :version))
         (sdl2:gl-make-current window context)
-        (cl-opengl-bindings:viewport 0 0 800 600)
+        (gl:viewport 0 0 800 600)
         (let ((program (make-program (resource "src/vertex-shader" 'logl)
                                      (resource "src/fragment-shader" 'logl)))
               (triangle-vbo (gl:gen-buffer))
               (vao (gl:gen-vertex-array))
-              (ebo (gl:gen-buffer)))
+              (ebo (gl:gen-buffer))
+              (null-array (gl:make-null-gl-array :unsigned-short)))
 
           (gl:use-program program)
 
@@ -107,7 +109,7 @@
             (buffer-data-from-lisp-array :array-buffer :static-draw *vertices* :float)
             (gl:enable-vertex-attrib-array 0)
             (gl:bind-buffer :element-array-buffer ebo)
-            (buffer-data-from-lisp-array :element-array-buffer :static-draw *indices* :unsigned-int)
+            (buffer-data-from-lisp-array :element-array-buffer :static-draw *indices* :unsigned-short)
             (gl:vertex-attrib-pointer 0 3 :float nil (* 4 3) 0))
 
           (sdl2:with-event-loop (:method :poll)
@@ -122,7 +124,7 @@
 
                    (with-program (program)
                      (with-vao (vao)
-                       (gl:draw-elements :triangles (gl:make-null-gl-array :unsigned-short) :count 6)))
+                       (gl:draw-elements :triangles null-array :count 6)))
 
                    (sdl2:gl-swap-window window))
             (:quit ()

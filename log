@@ -1,0 +1,25 @@
+2016-12-27:
+
+Today marks the beginning of a new era, one where I focus on learning OpenGL until I am confident that I have a reasonable grasp of the API, and then I can get rid of SDL2's graphics drawing interface and just use OpenGL to render things.
+
+I will be using Joey de Vries' excellent learnopengl.com tutorials. I have just finished chapter 5, and am ready to move on to chapter 6: shaders.
+
+Joey starts out by giving a very basic, high-level overview of what shaders are, which are just programs that run on the GPU. Shaders are, unfortunately, written in GLSL, meaning that I will have to either use GLSL or an s-expression-based layer that the #lispgames people cooked up, if such a thing exists.
+
+Shaders apparently always begin with a version declaration of the form "#version 330", then have input and output variables, then uniforms, and then finally the main() function. Each "input variable" to a *vertex* shader in particular (the first shader encountered in the pipeline) is also known as a *vertex attribute*, of which we have (at least, but usally exactly) 16 four-component attributes.
+
+2016-12-28:
+
+axion from #lispgames suggested that I just try to do the things in OpenGL that I wanted to, instead of following a tutorial. He said that "Everything in OpenGL is cake, once you learn the math." I will learn the math!
+
+Chapter 6 is about shaders, while chapter 7 is about textures, which is what I need for my Cave Story clone. I might as well just work my way through the tutorial linearly...
+
+2016-12-31:
+
+Well, time to keep working through the tutorial.
+
+Shaders are small programs that run on the GPU and written in a statically-typed C-like language called GLSL, which has the standard int, float, double, uint, and bool as well as the vectors (vector?) and matrices (matrix?) "container types". Sure, I'll buy that. (keep in mind that this is the third or fourth time I've "learned" (for what is learning without retention?) this material). Vectors look like "vecn" (vector of n floats), ;w
+
+2017-01-01:
+
+Shaders take inputs through variables declared as "in" (which for vertex shaders come directly from vertex attributes and not other shaders) and emit outputs through variables declared as "out". If an "out" variable in one shader stage has the same name and type as an "in" variable in the next stage, then the shader compiler links them together. Else, it fails (sometimes silently).
