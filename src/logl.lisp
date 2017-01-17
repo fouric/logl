@@ -1,4 +1,4 @@
-(in-package #:logl)
+(defparameter +opengl-float-size+ 4)
 
 (defmacro with-bind-buffer ((target buffer) &body body)
   `(progn
@@ -66,10 +66,12 @@
       (gl:delete-shader fragment-shader))
     program))
 
-(defparameter *vertices* #(0.5 0.5 0.0
-                           0.5 -0.5 0.0
-                           -0.5 -0.5 0.0
-                           -0.5 0.5 0.0))
+(defparameter *vertices* #(;; positions        colors
+                           0.5  0.5  0.0   0.0 0.0 1.0 ;; upper right
+                           0.5 -0.5  0.0   0.0 1.0 0.0 ;; lower right
+                           -0.5 -0.5  0.0   0.0 0.0 1.0 ;; lower left
+                           -0.5  0.5  0.0   1.0 0.0 0.0 ;; upper left
+                           ))
 (defparameter *indices* #(0 1 3
                           1 2 3))
 
@@ -95,22 +97,27 @@
         (format t "opengl version: ~s~%" (gl:get-string :version))
         (sdl2:gl-make-current window context)
         (gl:viewport 0 0 800 600)
-        (let ((program (make-program (resource "src/vertex-shader" 'logl)
-                                     (resource "src/fragment-shader" 'logl)))
-              (triangle-vbo (gl:gen-buffer))
-              (vao (gl:gen-vertex-array))
-              (ebo (gl:gen-buffer))
-              (null-array (gl:make-null-gl-array :unsigned-short)))
+        (let* ((program (make-program (fouriclib:resource "src/vertex-shader" 'logl
+                                       )
+                                      (resource "src/fragment-shader" 'logl)))
+               (triangle-vbo (gl:gen-buffer))
+               (vao (gl:gen-vertex-array))
+               (ebo (gl:gen-buffer))
+               (null-array (gl:make-null-gl-array :unsigned-short)))
 
           (gl:use-program program)
 
           (with-vao (vao)
             (gl:bind-buffer :array-buffer triangle-vbo)
             (buffer-data-from-lisp-array :array-buffer :static-draw *vertices* :float)
-            (gl:enable-vertex-attrib-array 0)
             (gl:bind-buffer :element-array-buffer ebo)
             (buffer-data-from-lisp-array :element-array-buffer :static-draw *indices* :unsigned-short)
-            (gl:vertex-attrib-pointer 0 3 :float nil (* 4 3) 0))
+            ;; vertex position components; attribute index 0, 3 floats at a time, interleaved with 3 color floats
+            (gl:vertex-attrib-pointer 0 3 :float nil (* +opengl-float-size+ 6) 0)
+            (gl:enable-vertex-attrib-array 0)
+            ;; vertex position components; attribute index 1, 3 floats at a time, starting after 3 vertex floats
+            (gl:vertex-attrib-pointer 1 3 :float nil (* +opengl-float-size+ 6) (* +opengl-float-size+ 3))
+            (gl:enable-vertex-attrib-array 1))
 
           (sdl2:with-event-loop (:method :poll)
             (:keyup (:keysym keysym)

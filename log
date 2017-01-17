@@ -23,3 +23,27 @@ Shaders are small programs that run on the GPU and written in a statically-typed
 2017-01-01:
 
 Shaders take inputs through variables declared as "in" (which for vertex shaders come directly from vertex attributes and not other shaders) and emit outputs through variables declared as "out". If an "out" variable in one shader stage has the same name and type as an "in" variable in the next stage, then the shader compiler links them together. Else, it fails (sometimes silently).
+
+2017-01-02:
+
+I successfully modify the rectangle-displaying program from chapter 5 such that the vertex shader generates a color and sends it to the fragment shader, which displays it; previously, the color had been hardcoded into the fragment shader itself. Now it's just hardcoded into the vertex shader! A significant improvement.
+
+2017-01-12:
+
+I'm coming back to the project after a several-week hiatus (during which I managed to get virtually nothing of any use done). I go through the section on uniforms. I remember these! Global variables for shaders. I notice the warning that the compiler will *silently* remove unused uniforms from your shader code.
+
+Note: load LOGL with (ql:quickload :logl) and run with (logl:run). I placed the LOGL code in its own package, which might not have been the best idea, now that I think about it.
+
+Part 6.4 of the tutorial has me set the color of the output polygons by setting a uniform that is used in the fragment shader to color them. I remove the hardcoded color and "out" variable from vertex-shader and change the "in vec4 vertex_color" variable in fragment-shader to be "uniform vec4 vertex_shader", saving me a tiny amount of time. I quickly add a local binding around the event loop that contains the handle for the vertex_color variable, and then insert a small chunk of code inside the :idle case of the loop that continuously updates the quad color using the current time and the sin function.
+
+That gave me an idea; what if mercury allowed you to designate parts of a program that you could quickly add code and/or bindings to, to make doing things easier? Similar to vim's marks, but more specialized and intelligent. At the very least, they would have multi-character names, as well as a list of them.
+
+2017-01-13:
+
+After finishing the modifications to my program that cause the quads to transition between green and black for all eternity, I go to the next page in the PDF...only to be confronted with a multicolored triangle that came without any context or explanation. The text that I see after the tri indicates that the PDF elided some material. I go to the web site and quickly find it. This section, titled "More attributes", is about adding per-vertex color information. Joey decided to interleave the color and position data so that all of the information for a single vertex (position and then color) is in chunks. I adjust my *vertices* array to add in the interleaved color data.
+
+2017-01-16:
+
+Whoops, I just realized that I forgot to make a Git commit after finishing that previous section of code. I guess that I'll make one right after I'm done making the modifications that display the rainbow polygons.
+
+I successfully modify my quad code to take vertex colors from vertex attributes (index 1, in particular), with the vertex position and color data being interleaved such that all of the data for a single vertex is consecutive in memory.

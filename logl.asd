@@ -16,5 +16,4 @@
   :serial t
   :depends-on (:sdl2 :cl-opengl :fouriclib)
   :pathname "src"
-  :components ((:file "package")
-               (:file "logl" :depends-on ("package"))))
+  :components ((:file "logl")))
