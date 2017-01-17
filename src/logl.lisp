@@ -12,13 +12,11 @@
     (gl:free-gl-array gl-array)))
 
 (defparameter *vertices* #(;; positions        colors
-                           0.5  0.5  0.0   0.0 0.0 1.0 ;; upper right
-                           0.5 -0.5  0.0   0.0 1.0 0.0 ;; lower right
-                           -0.5 -0.5  0.0   0.0 0.0 1.0 ;; lower left
-                           -0.5  0.5  0.0   1.0 0.0 0.0 ;; upper left
+                           0.5  -0.5  0.0   1.0 0.0 0.0 ;; bottom right
+                           -0.5 -0.5  0.0   0.0 1.0 0.0 ;; bottom left
+                           0.0   0.5  0.0   0.0 0.0 1.0 ;; top
                            ))
-(defparameter *indices* #(0 1 3
-                          1 2 3))
+(defparameter *indices* #(0 1 2))
 
 (defun make-gl-array (lisp-array type)
   (let ((gl-array (gl:alloc-gl-array type (length lisp-array))))
@@ -39,7 +37,6 @@
                        :context-profile-mask sdl2-ffi:+sdl-gl-context-profile-core+)
     (sdl2:with-window (window :w 800 :h 600 :flags '(:opengl :resizable))
       (sdl2:with-gl-context (context window)
-        (format t "opengl version: ~s~%" (gl:get-string :version))
         (sdl2:gl-make-current window context)
         (gl:viewport 0 0 800 600)
         (let* ((program (make-program (fouriclib:resource "src/vertex-shader" 'logl)
@@ -75,7 +72,7 @@
 
                    (with-program (program)
                      (with-vao (vao)
-                       (gl:draw-elements :triangles null-array :count 6)))
+                       (gl:draw-elements :triangles null-array :count 3)))
 
                    (sdl2:gl-swap-window window))
             (:quit ()

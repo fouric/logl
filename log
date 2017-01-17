@@ -51,3 +51,17 @@ I successfully modify my quad code to take vertex colors from vertex attributes 
 6.5 and 6.6 are about making a class to manage your shaders. I don't think I need that sort of abstraction at this point, and I when I do, I can assure you that I will make something more elegant than what could possibly be expressed in C++.
 
 With that, I make a commit and end the chapter. While I'm at it, I remove the logl package that I was putting everything in, for simplicity. This is a sandbox, there's no need to have any sort of namespace isolation.
+
+After moving some of the necessary but non-core code (such as utility macros and shader creation functions) into separate files, I get rid of the line that prints the OpenGL version, just to make the screen a tiny bit tidier and easier to scan. The line is
+
+(format t "opengl version: ~s~%" (gl:get-string :version))
+
+Now, on to the next chapter!
+
+Chapter 7, "Textures", is about...textures. Finally! The main reason that I wanted to learn OpenGL this early was to create a Cave Story clone using that series of video tutorials. One of the first things that Chris did in his series was to draw sprites onto the screen...which requires that you either use SDL2 textures and surfaces or OpenGL textures. I don't want to deal with the former, so OpenGL it is.
+
+Interesting...most textures are two dimensional, but you can also have one and three dimensional textures. I wonder what the use cases are?
+
+Because Joey continues to use a single triangle instead of a quad, I guess that I'll do the same, just to make things slightly easier. The modification is three easy steps: change the vertex data in *vertices*, change the index data in *indices*, and change the :count argument to DRAW-ELEMENTS.
+
+I commit ("changed shape from quad to tri") and continue.
