@@ -1,34 +1,5 @@
 (defparameter +opengl-float-size+ 4)
 
-(defmacro with-bind-buffer ((target buffer) &body body)
-  `(progn
-     (gl:bind-buffer ,target ,buffer)
-     ,@body
-     (gl:bind-buffer ,target 0)))
-
-(defmacro with-vertex-attrib-array ((index) &body body)
-  `(progn
-     (gl:enable-vertex-attrib-array ,index)
-     ,@body
-     (gl:disable-vertex-attrib-array ,index)))
-
-(defmacro with-program ((program) &body body)
-  `(progn
-     (gl:use-program ,program)
-     ,@body
-     (gl:use-program 0)))
-
-(defmacro with-vao ((vao) &body body)
-  `(progn
-     (gl:bind-vertex-array ,vao)
-     ,@body
-     (gl:bind-vertex-array 0)))
-
-(defmacro with-shader ((name type filename) &body body)
-  `(let ((,name (make-shader-from-file ,type ,filename)))
-     ,@body
-     (gl:delete-shader ,name)))
-
 (defun transfer-data-to-gpu (data &optional (buffer-type :array-buffer) (buffer-usage :static-draw))
   (check-type data array)
   ;; buffer doesn't actually have memory allocated to it until it's bound
@@ -39,32 +10,6 @@
     (gl:buffer-data :array-buffer buffer-usage gl-array)
     (gl:bind-buffer buffer-type 0)
     (gl:free-gl-array gl-array)))
-
-(defun make-shader (type filename)
-  (assert (or (eq type :vertex-shader) (eq type :fragment-shader))
-          (type) "~S is not a valid shader type" type)
-  (let ((shader-id (gl:create-shader type))
-        (source (fouriclib:read-file filename)))
-    (gl:shader-source shader-id source)
-    (gl:compile-shader shader-id)
-    (unless (gl:get-shader shader-id :compile-status)
-      (format t "shader info log for type ~s: ~s~%shader: ~s~%~%" type (gl:get-shader-info-log shader-id) source)
-      (sb-ext:exit))
-    shader-id))
-
-(defun make-program (vertex-shader-filename fragment-shader-filename)
-  (let ((program (gl:create-program)))
-    (let ((vertex-shader (make-shader :vertex-shader vertex-shader-filename))
-          (fragment-shader (make-shader :fragment-shader fragment-shader-filename)))
-      (gl:attach-shader program vertex-shader)
-      (gl:attach-shader program fragment-shader)
-      (gl:link-program program)
-      (unless (gl:get-program program :link-status)
-        (format t "program info log: ~s~%" (gl:get-program-info-log program))
-        (sb-ext:exit))
-      (gl:delete-shader vertex-shader)
-      (gl:delete-shader fragment-shader))
-    program))
 
 (defparameter *vertices* #(;; positions        colors
                            0.5  0.5  0.0   0.0 0.0 1.0 ;; upper right
@@ -97,9 +42,8 @@
         (format t "opengl version: ~s~%" (gl:get-string :version))
         (sdl2:gl-make-current window context)
         (gl:viewport 0 0 800 600)
-        (let* ((program (make-program (fouriclib:resource "src/vertex-shader" 'logl
-                                       )
-                                      (resource "src/fragment-shader" 'logl)))
+        (let* ((program (make-program (fouriclib:resource "src/vertex-shader" 'logl)
+                                      (fouriclib:resource "src/fragment-shader" 'logl)))
                (triangle-vbo (gl:gen-buffer))
                (vao (gl:gen-vertex-array))
                (ebo (gl:gen-buffer))

@@ -47,3 +47,7 @@ After finishing the modifications to my program that cause the quads to transiti
 Whoops, I just realized that I forgot to make a Git commit after finishing that previous section of code. I guess that I'll make one right after I'm done making the modifications that display the rainbow polygons.
 
 I successfully modify my quad code to take vertex colors from vertex attributes (index 1, in particular), with the vertex position and color data being interleaved such that all of the data for a single vertex is consecutive in memory.
+
+6.5 and 6.6 are about making a class to manage your shaders. I don't think I need that sort of abstraction at this point, and I when I do, I can assure you that I will make something more elegant than what could possibly be expressed in C++.
+
+With that, I make a commit and end the chapter. While I'm at it, I remove the logl package that I was putting everything in, for simplicity. This is a sandbox, there's no need to have any sort of namespace isolation.
