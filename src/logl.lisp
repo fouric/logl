@@ -46,7 +46,9 @@
                (ebo (gl:gen-buffer))
                (null-array (gl:make-null-gl-array :unsigned-short)))
 
+
           (gl:use-program program)
+          (%gl:tex-parameter-i)
 
           (with-vao (vao)
             (gl:bind-buffer :array-buffer triangle-vbo)

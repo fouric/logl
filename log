@@ -18,7 +18,7 @@ Chapter 6 is about shaders, while chapter 7 is about textures, which is what I n
 
 Well, time to keep working through the tutorial.
 
-Shaders are small programs that run on the GPU and written in a statically-typed C-like language called GLSL, which has the standard int, float, double, uint, and bool as well as the vectors (vector?) and matrices (matrix?) "container types". Sure, I'll buy that. (keep in mind that this is the third or fourth time I've "learned" (for what is learning without retention?) this material). Vectors look like "vecn" (vector of n floats), ;w
+Shaders are small programs that run on the GPU and written in a statically-typed C-like language called GLSL, which has the standard int, float, double, uint, and bool as well as the vectors (vector?) and matrices (matrix?) "container types". Sure, I'll buy that. (keep in mind that this is the third or fourth time I've "learned" (for what is learning without retention?) this material). Vectors look like "vecn" (vector of n floats),
 
 2017-01-01:
 
@@ -65,3 +65,31 @@ Interesting...most textures are two dimensional, but you can also have one and t
 Because Joey continues to use a single triangle instead of a quad, I guess that I'll do the same, just to make things slightly easier. The modification is three easy steps: change the vertex data in *vertices*, change the index data in *indices*, and change the :count argument to DRAW-ELEMENTS.
 
 I commit ("changed shape from quad to tri") and continue.
+
+2017-01-27:
+
+I download the brick wall image (wall.jpg) into the newly-created res/ folder in the logl/ project directory. Might as well get into the habit of separating code and data now?
+
+For the record, I'm on page 64 of the Learn OpenGL PDF.
+
+To map our brick wall texture to polygons, we need to tell every vertex what position on the texture it corresponds to. We do this by giving every vertex a *texture coordinate*. Fragment interpolation then linearly assigns texture coordinates to every non-vertex fragment.
+
+For our 2D textures, texture coordinates range from 0.0 to 1.0 in the x and y axis, with (0.0 0.0) being the *lower left* corner of the map and (1.0 1.0) being the *upper right* corner of the map.
+
+We're going to place one side of our tri along the bottom edge of the texture, and bisect the top edge with the opposite vertex. That is, our vertices will have coordinates of (0.0 0.0), (1.0 0.0), and (0.5 1.0).
+
+Texture sampling can be done many different ways, meaning that we have to tell OpenGL exactly how to do it.
+
+"Texture wrapping" describes how OpenGL behaves when we give it coordinates that fall out of the [0.0. 1.0] range. There are four values: GL_REPEAT (the default option), GL_MIRRORED_REPEAT (repeat with mirroring), GL_CLAMP_TO_EDGE (clamp coordinates to lie between 0.0 and 1.0 inclusive), GL_CLAMP_TO_BORDER (samples outside the [0.0, 1.0] return a user-defined color). Each of these options can be set per coordinate axis using glTexParameteri in C(++) (see page 65) and %gl:tex-parameter-i in Common Lisp (todo: figure out if there's a version of this function without the leading "%").
+
+The texture coordinate axes are s, t, and r, which correspond to the x, y, and z spatial coordinate axes.
+
+Because we have floating-point values between 0.0 and 1.0, but textures come as arrays of discrete values, we must have some way to discretize texture coordinates to specific texels (texture pixels). This is called *texture filtering*. OpenGL has several types of texture filtering, but the LOGL tutorial only shows us two at this point: the default, GL_NEAREST, and GL_LINEAR. GL_NEAREST takes the texel closest to the texture coordinate point. GL_LINEAR is (bi)linear filtering, and linear mixes the colors of the closest texels.
+
+2017-01-29:
+
+It turns out that we can set the texture filtering mode per for minification and magnification separately. Who knew?
+
+2017-02-02:
+
+Mipmap: a collection of texture images where each subsequent texture is 
