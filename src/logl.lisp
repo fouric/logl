@@ -1,5 +1,6 @@
 (defparameter +opengl-float-size+ 4)
 
+;; ...why is this not being used???
 (defun transfer-data-to-gpu (data &optional (buffer-type :array-buffer) (buffer-usage :static-draw))
   (check-type data array)
   ;; buffer doesn't actually have memory allocated to it until it's bound
@@ -16,7 +17,7 @@
                            -0.5 -0.5  0.0   0.0 1.0 0.0 ;; bottom left
                            0.0   0.5  0.0   0.0 0.0 1.0 ;; top
                            ))
-(defparameter *indices* #(0 1 2))
+(defparameter *indices* #(0 1 2 2 1 3))
 
 (defun make-gl-array (lisp-array type)
   (let ((gl-array (gl:alloc-gl-array type (length lisp-array))))
@@ -72,7 +73,7 @@
 
                    (with-program (program)
                      (with-vao (vao)
-                       (gl:draw-elements :triangles null-array :count 3)))
+                       (gl:draw-elements :triangles null-array :count 6)))
 
                    (sdl2:gl-swap-window window))
             (:quit ()
