@@ -13,11 +13,12 @@
     (gl:free-gl-array gl-array)))
 
 (defparameter *vertices* #(;; positions        colors
-                           0.5  -0.5  0.0   1.0 0.0 0.0 ;; bottom right
-                           -0.5 -0.5  0.0   0.0 1.0 0.0 ;; bottom left
-                           0.0   0.5  0.0   0.0 0.0 1.0 ;; top
+                            0.5   0.5  0.0   0.8 0.2 0.8 ;; top right
+                           -0.5   0.5  0.0   0.8 0.2 0.8 ;; top left
+                           -0.5  -0.5  0.0   0.8 0.2 0.8 ;; bottom left
+                            0.5  -0.5  0.0   0.8 0.2 0.8 ;; bottom right
                            ))
-(defparameter *indices* #(0 1 2 2 1 3))
+(defparameter *indices* #(0 1 2 0 2 3))
 
 (defun make-gl-array (lisp-array type)
   (let ((gl-array (gl:alloc-gl-array type (length lisp-array))))
@@ -68,7 +69,7 @@
             (:windowevent (:event event)
                           (cond ((= event sdl2-ffi:+sdl-windowevent-resized+) nil)))
             (:idle ()
-                   (gl:clear-color 0.2 0.3 0.3 1.0)
+                   (gl:clear-color 0.1 0.1 0.1 1.0)
                    (gl:clear :color-buffer)
 
                    (with-program (program)
