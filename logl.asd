@@ -14,7 +14,7 @@
   :description "DESCRIPTION HERE"
 
   :serial t
-  :depends-on (:sdl2 :cl-opengl :fouriclib)
+  :depends-on (:sdl2 :cl-opengl :fouriclib :alexandria)
   :pathname "src"
   :components ((:file "package")
                (:file "macros")
