@@ -11,3 +11,5 @@
 *.spec
 
 learn-opengl.pdf
+_posts
+*.ogv
