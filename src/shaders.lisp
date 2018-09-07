@@ -1,3 +1,7 @@
+(in-package :logl)
+
+(proclaim '(optimize (speed 0) (safety 0) (space 0) (debug 3)))
+
 (defun make-shader (type filename)
   (assert (or (eq type :vertex-shader) (eq type :fragment-shader))
           (type) "~S is not a valid shader type" type)

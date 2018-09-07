@@ -16,6 +16,7 @@
   :serial t
   :depends-on (:sdl2 :cl-opengl :fouriclib)
   :pathname "src"
-  :components ((:file "macros")
+  :components ((:file "package")
+               (:file "macros")
                (:file "shaders")
                (:file "logl" :depends-on ("macros" "shaders"))))

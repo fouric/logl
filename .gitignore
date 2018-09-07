@@ -9,3 +9,7 @@
 
 # spec files
 *.spec
+
+learn-opengl.pdf
+_posts
+*.ogv

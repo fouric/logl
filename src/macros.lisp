@@ -1,3 +1,7 @@
+(in-package :logl)
+
+(proclaim '(optimize (speed 0) (safety 0) (space 0) (debug 3)))
+
 (defmacro with-bind-buffer ((target buffer) &body body)
   "bind BUFFER to TARGET around the given BODY"
   `(progn

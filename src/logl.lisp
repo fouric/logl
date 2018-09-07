@@ -1,3 +1,7 @@
+(in-package :logl)
+
+(proclaim '(optimize (speed 0) (safety 0) (space 0) (debug 3)))
+
 (defparameter +opengl-float-size+ 4)
 
 (defun transfer-data-to-gpu (data &optional (buffer-type :array-buffer) (buffer-usage :static-draw))
