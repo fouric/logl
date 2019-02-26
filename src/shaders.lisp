@@ -1,8 +1,12 @@
+(in-package :logl)
+
+(proclaim '(optimize (speed 0) (safety 0) (space 0) (debug 3)))
+
 (defun make-shader (type filename)
   (assert (or (eq type :vertex-shader) (eq type :fragment-shader))
           (type) "~S is not a valid shader type" type)
   (let ((shader-id (gl:create-shader type))
-        (source (fouriclib:read-file filename)))
+        (source (fouric:read-file filename)))
     (gl:shader-source shader-id source)
     (gl:compile-shader shader-id)
     (unless (gl:get-shader shader-id :compile-status)
