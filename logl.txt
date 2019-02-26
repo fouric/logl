@@ -1,0 +1,7 @@
+learn opengl tutorial stuff
+
+opengl is a state machine
+the opengl state is referred to as the opengl context
+when using opengl, we usually change the state/context by setting some options and manipulating some buffers, and then issue a render command that implicitly uses that context
+there are state-changing and state-using opengl functions - identify and separate
+an opengl object is a thing like a C record that is a collection of options that represents a subset of opengl state

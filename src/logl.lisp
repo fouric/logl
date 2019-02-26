@@ -38,46 +38,48 @@
     ;; make sure that we get 3.3 core profile
     (sdl2:gl-set-attrs :context-major-version 3
                        :context-minor-version 3
-                       :context-profile-mask sdl2-ffi:+sdl-gl-context-profile-core+)
+                       :context-profile-mask sdl2-ffi:+sdl-gl-context-profile-core+
+                       ;; double-buffering on by default on my machine but it doesn't hurt to explicitly turn it on
+                       :doublebuffer 1)
     (sdl2:with-window (window :w 800 :h 600 :flags '(:opengl :resizable))
       (sdl2:with-gl-context (context window)
         (sdl2:gl-make-current window context)
         (gl:viewport 0 0 800 600)
-        (let* ((program (make-program (fouriclib:resource "src/vertex-shader" 'logl)
-                                      (fouriclib:resource "src/fragment-shader" 'logl)))
+        (let* ((program (make-program (fouric:resource "src/vertex-shader" 'logl)
+                                      (fouric:resource "src/fragment-shader" 'logl)))
                (triangle-vbo (gl:gen-buffer))
                (vao (gl:gen-vertex-array))
                (ebo (gl:gen-buffer))
                (null-array (gl:make-null-gl-array :unsigned-short)))
 
-          (gl:use-program program)
+          (with-program (program)
 
-          (with-vao (vao)
-            (gl:bind-buffer :array-buffer triangle-vbo)
-            (buffer-data-from-lisp-array :array-buffer :static-draw *vertices* :float)
-            (gl:bind-buffer :element-array-buffer ebo)
-            (buffer-data-from-lisp-array :element-array-buffer :static-draw *indices* :unsigned-short)
-            ;; vertex position components; attribute index 0, 3 floats at a time, interleaved with 3 color floats
-            (gl:vertex-attrib-pointer 0 3 :float nil (* +opengl-float-size+ 6) 0)
-            (gl:enable-vertex-attrib-array 0)
-            ;; vertex position components; attribute index 1, 3 floats at a time, starting after 3 vertex floats
-            (gl:vertex-attrib-pointer 1 3 :float nil (* +opengl-float-size+ 6) (* +opengl-float-size+ 3))
-            (gl:enable-vertex-attrib-array 1))
+            (with-vao (vao)
+              (gl:bind-buffer :array-buffer triangle-vbo)
+              (buffer-data-from-lisp-array :array-buffer :static-draw *vertices* :float)
+              (gl:bind-buffer :element-array-buffer ebo)
+              (buffer-data-from-lisp-array :element-array-buffer :static-draw *indices* :unsigned-short)
+              ;; vertex position components; attribute index 0, 3 floats at a time, interleaved with 3 color floats
+              (gl:vertex-attrib-pointer 0 3 :float nil (* +opengl-float-size+ 6) 0)
+              (gl:enable-vertex-attrib-array 0)
+              ;; vertex position components; attribute index 1, 3 floats at a time, starting after 3 vertex floats
+              (gl:vertex-attrib-pointer 1 3 :float nil (* +opengl-float-size+ 6) (* +opengl-float-size+ 3))
+              (gl:enable-vertex-attrib-array 1))
 
-          (sdl2:with-event-loop (:method :poll)
-            (:keyup (:keysym keysym)
-                    (when (sdl2:scancode= (sdl2:scancode-value keysym) :scancode-escape)
-                      (sdl2:push-event :quit)))
-            (:windowevent (:event event)
-                          (cond ((= event sdl2-ffi:+sdl-windowevent-resized+) nil)))
-            (:idle ()
-                   (gl:clear-color 0.2 0.3 0.3 1.0)
-                   (gl:clear :color-buffer)
+            (sdl2:with-event-loop (:method :poll)
+              (:keyup (:keysym keysym)
+                      (when (or (sdl2:scancode= (sdl2:scancode-value keysym) :scancode-escape)
+                                (sdl2:scancode= (sdl2:scancode-value keysym) :scancode-q))
+                        (sdl2:push-event :quit)))
+              (:windowevent (:event event)
+                            (cond ((= event sdl2-ffi:+sdl-windowevent-resized+) nil)))
+              (:idle ()
+                     (gl:clear-color 0.2 0.3 0.3 1.0)
+                     (gl:clear :color-buffer)
 
-                   (with-program (program)
                      (with-vao (vao)
-                       (gl:draw-elements :triangles null-array :count 3)))
+                       (gl:draw-elements :triangles null-array :count 3))
 
-                   (sdl2:gl-swap-window window))
-            (:quit ()
-                   t)))))))
+                     (sdl2:gl-swap-window window))
+              (:quit ()
+                     t))))))))
