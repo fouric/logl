@@ -1,7 +1,5 @@
 (in-package :logl)
 
-(proclaim '(optimize (speed 0) (safety 0) (space 0) (debug 3)))
-
 (defparameter +opengl-float-size+ 4)
 
 (defun transfer-data-to-gpu (data &optional (buffer-type :array-buffer) (buffer-usage :static-draw))
@@ -35,9 +33,9 @@
 
 (defun run ()
   (sdl2:with-init (:everything)
-    ;; make sure that we get 3.3 core profile
-    (sdl2:gl-set-attrs :context-major-version 3
-                       :context-minor-version 3
+    ;; make sure that we get 4.5 core profile
+    (sdl2:gl-set-attrs :context-major-version 4
+                       :context-minor-version 5
                        :context-profile-mask sdl2-ffi:+sdl-gl-context-profile-core+
                        ;; double-buffering on by default on my machine but it doesn't hurt to explicitly turn it on
                        :doublebuffer 1)
@@ -50,20 +48,34 @@
                (triangle-vbo (gl:gen-buffer))
                (vao (gl:gen-vertex-array))
                (ebo (gl:gen-buffer))
-               (null-array (gl:make-null-gl-array :unsigned-short)))
+               (null-array (gl:make-null-gl-array :unsigned-short))
+               (position-index (gl:get-attrib-location program "position"))
+               (color-index (gl:get-attrib-location program "color")))
 
+          ;; expands into (gl:use-program program) ... (gl:use-program 0)
           (with-program (program)
 
+            ;; (gl:bind-vertex-array vao)
             (with-vao (vao)
+              ;; a buffer object is a handle to a region of memory on the GPU where we can store stuff
+              ;; a vertex buffer object is a particular *type* of buffer object used for storing vertices. we name it with :array-buffer
+              ;; we can bind multiple buffer objects as long as they refer to different kinds of data and we bind to different targets
               (gl:bind-buffer :array-buffer triangle-vbo)
+              ;; this is where we actually load the data into the buffer - calls gl:buffer-data with the :array-buffer target
               (buffer-data-from-lisp-array :array-buffer :static-draw *vertices* :float)
+              ;; what's an element array buffer?
               (gl:bind-buffer :element-array-buffer ebo)
               (buffer-data-from-lisp-array :element-array-buffer :static-draw *indices* :unsigned-short)
               ;; vertex position components; attribute index 0, 3 floats at a time, interleaved with 3 color floats
-              (gl:vertex-attrib-pointer 0 3 :float nil (* +opengl-float-size+ 6) 0)
+              ;; vertex-attrib-pointer tells opengl how to interpret the data in vertex attribute array 0 from now until the next time we update said interpretation information
+              ;; that is, it updates the opengl state, such that when we call gl:draw-elements, this information is used to interpret the data in the array-buffer target?
+              ;; the first argument is "index" - the index of the vertex attribute that this data will be fed into. practically, this means that whatever is assigned to location 0 in our vertex shader will get this data
+              ;; this actually forms a persistent connection between the vertex buffer object storing our triangle data and vertex attribute 0, because we called it when our triangle-vbo was bound to :array-buffer
+              ;; now, even if we rebind the array-buffer _target_, the reference is kept between vertex attribute 0 and our VBO
+              (gl:vertex-attrib-pointer position-index 3 :float nil (* +opengl-float-size+ 6) 0)
               (gl:enable-vertex-attrib-array 0)
               ;; vertex position components; attribute index 1, 3 floats at a time, starting after 3 vertex floats
-              (gl:vertex-attrib-pointer 1 3 :float nil (* +opengl-float-size+ 6) (* +opengl-float-size+ 3))
+              (gl:vertex-attrib-pointer color-index 3 :float nil (* +opengl-float-size+ 6) (* +opengl-float-size+ 3))
               (gl:enable-vertex-attrib-array 1))
 
             (sdl2:with-event-loop (:method :poll)
@@ -82,4 +94,5 @@
 
                      (sdl2:gl-swap-window window))
               (:quit ()
-                     t))))))))
+                     t)))))))
+  )

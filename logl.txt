@@ -5,3 +5,15 @@ the opengl state is referred to as the opengl context
 when using opengl, we usually change the state/context by setting some options and manipulating some buffers, and then issue a render command that implicitly uses that context
 there are state-changing and state-using opengl functions - identify and separate
 an opengl object is a thing like a C record that is a collection of options that represents a subset of opengl state
+
+todo: figure out how to get opengl bind target, then use to write data->buffer function that saves old bind target, binds new target, loads data into buffer, and binds old target
+
+inbox:
+    try shadertoy(.com)
+    https://github.com/anholt/libepoxy
+    _skinning_ is describing partial ownership between bones that allows you to articulate single models around joints
+    a buffer is a block of opengl memory - untyped?
+    vertex array objects represent a collection of sets of vertex attributes
+        what's a "vertex attribute"? it's just a parameter to a shader, i think
+        the vertex attributes themselves are stored in buffer objects
+        the vao's only contain references to those blocks
